@@ -18,8 +18,8 @@
 			if(!session_id())
 			{
 				session_start();
-				//session_cache_limiter('private');
-				//session_cache_expire(10);
+				session_cache_limiter('private');
+				session_cache_expire(2); // 2 min.
 			}
 			$this->cc = new cURL(true,'https://cel.reniec.gob.pe/valreg/valreg.do',dirname(__FILE__).'/cookies.txt');
 
@@ -100,7 +100,8 @@
 		function ProcesaCaptha($name)
 		{
 			$captcha = $this->GetSession("captcha");
-			if( $captcha!=false )
+			$stime = $this->GetSession("stime");
+			if( $captcha!=false && $stime+(2*60) > time() )
 			{
 				return $captcha;
 			}
@@ -130,6 +131,7 @@
 					if( $row = $rpt->fetchArray(SQLITE3_ASSOC) )
 					{
 						$this->PutSession("captcha", $row["c1"].$row["c2"].$row["c3"].$row["c4"]);
+						$this->PutSession("stime", time());
 						return $row["c1"].$row["c2"].$row["c3"].$row["c4"];
 					}
 				}
